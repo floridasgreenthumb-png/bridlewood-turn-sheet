@@ -19,7 +19,7 @@
   --shadow:0 1px 2px rgba(22,26,25,.06),0 6px 18px -8px rgba(22,26,25,.18);
   --t-paint:#7C6BB5; --t-window:#2F7FB5; --t-door:#B5722F; --t-floor:#8A6A3B;
   --t-elec:#C2A014; --t-land:#3F8F4E; --t-cab:#9A5A7A; --t-common:#5A6B78;
-  --t-appl:#2F8E8A; --t-plumb:#3A63B5; --t-hvac:#7A8A2F;
+  --t-appl:#2F8E8A; --t-plumb:#3A63B5; --t-hvac:#7A8A2F; --t-env:#7A6A55;
   --r:10px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
@@ -30,7 +30,7 @@
   --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px -8px rgba(0,0,0,.6);
   --t-paint:#A798D6; --t-window:#6FB2DE; --t-door:#DBA06A; --t-floor:#C2A173;
   --t-elec:#E0C64A; --t-land:#6FC17F; --t-cab:#C88CAB; --t-common:#93A5B2;
-  --t-appl:#5FC0BB; --t-plumb:#7C9BE0; --t-hvac:#B2C05F;
+  --t-appl:#5FC0BB; --t-plumb:#7C9BE0; --t-hvac:#B2C05F; --t-env:#BFAE94;
 }}
 :root[data-theme="dark"]{
   --paper:#121615; --surface:#1B211F; --surface-2:#222927;
@@ -40,7 +40,7 @@
   --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px -8px rgba(0,0,0,.6);
   --t-paint:#A798D6; --t-window:#6FB2DE; --t-door:#DBA06A; --t-floor:#C2A173;
   --t-elec:#E0C64A; --t-land:#6FC17F; --t-cab:#C88CAB; --t-common:#93A5B2;
-  --t-appl:#5FC0BB; --t-plumb:#7C9BE0; --t-hvac:#B2C05F;
+  --t-appl:#5FC0BB; --t-plumb:#7C9BE0; --t-hvac:#B2C05F; --t-env:#BFAE94;
 }
 *{box-sizing:border-box}
 body{
@@ -167,6 +167,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .mode.shared{color:var(--done)}
 .mode.connecting{color:var(--muted);opacity:.7}
 .mode.local{color:var(--flag)}
+.mode.offline{color:var(--flag)}
 .reopen{
   padding:5px 11px;border:1px solid var(--done);border-radius:7px;
   font-family:"Barlow Semi Condensed",sans-serif;font-size:13.5px;font-weight:600;
@@ -433,6 +434,53 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .co-hist .w span{display:block;font-size:12.5px;font-weight:400;color:var(--muted);margin-top:1px}
 /*CO:CSS-END*/
 
+/*CAM:CSS-BEGIN*/
+/* ---------- camera ---------- */
+.grp-h .cam-btn{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 10px;min-height:34px;border-radius:8px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink-2);flex:0 0 auto;
+  font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:14px;
+}
+.cam-btn svg{width:19px;height:19px;flex:0 0 auto}
+.cam-btn.has{border-color:var(--done);color:var(--done)}
+.cam-btn.bad{border-color:var(--flag);color:var(--flag)}
+.cam-n{font-size:13px}
+.cam-wait{font-family:Barlow,sans-serif;font-weight:600;font-size:11.5px;color:var(--flag)}
+.bar .cam-all{
+  display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 10px;border-radius:7px;
+  border:1px solid var(--line);color:var(--ink-2);flex:0 0 auto;
+  font-family:"IBM Plex Mono",monospace;font-size:13px;font-variant-numeric:tabular-nums;
+}
+.bar .cam-all svg{width:18px;height:18px}
+.bar .cam-all.waiting{border-color:var(--flag);color:var(--flag)}
+.bar .cam-all.bad{background:var(--flag-soft)}
+#camToast{
+  position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:120;
+  transform:translate(-50%,12px);opacity:0;pointer-events:none;max-width:calc(100% - 32px);
+  padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--paper);
+  font-size:14px;font-weight:600;box-shadow:var(--shadow);transition:opacity .18s,transform .18s;
+}
+#camToast.show{opacity:1;transform:translate(-50%,0)}
+.cam-p{margin:0 0 8px;font-size:14.5px;line-height:1.45;color:var(--ink-2)}
+.cam-p b{color:var(--ink);overflow-wrap:anywhere}
+.cam-p.warn{color:var(--flag)}
+.cam-empty{font-size:14.5px;color:var(--muted);text-align:center;padding:24px 8px}
+.cam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:10px}
+.cam-ph{position:relative;margin:0;border-radius:8px;overflow:hidden;border:1px solid var(--line-2);background:var(--surface-2)}
+.cam-ph img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}
+.cam-ph figcaption{
+  position:absolute;left:0;right:0;bottom:0;padding:3px 6px;font-size:11px;font-weight:600;
+  background:rgba(0,0,0,.55);color:#fff;
+}
+.cam-ph.sent figcaption{background:rgba(15,118,110,.85)}
+.cam-ph.failed figcaption{background:rgba(154,91,18,.9)}
+.cam-x{
+  position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(0,0,0,.55);color:#fff;font-size:18px;line-height:1;
+}
+.grp-h{align-items:center}
+/*CAM:CSS-END*/
+
 /* ---------- confirm ---------- */
 .ask{
   position:fixed;inset:0;z-index:200;background:rgba(10,13,12,.55);
@@ -515,6 +563,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="lbl" id="barN">0 of 51</div>
     <div class="pb"><i id="barI" style="width:0%"></i></div>
     <div class="lbl" id="barPct">0%</div>
+    <button class="cam-all" id="camAll" type="button" aria-label="Photos"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h2l1.2-1.6h4.6L13.5 5h2A1.5 1.5 0 0 1 17 6.5v8a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5z"/><circle cx="10" cy="10.5" r="3"/></svg><span class="cam-all-n">0</span></button>
     <button class="up" id="toTop" aria-label="Back to top">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M8 13V3.5M3.5 8 8 3.5 12.5 8"></path></svg>
@@ -529,7 +578,7 @@ var TRADES = {
   paint:["Drywall & Paint","--t-paint"], window:["Windows, Blinds & Screens","--t-window"],
   door:["Doors & Hardware","--t-door"], floor:["Flooring","--t-floor"],
   elec:["Electrical & Lighting","--t-elec"], land:["Landscaping & Fencing","--t-land"],
-  cab:["Cabinets","--t-cab"], common:["Common Packages","--t-common"],
+  cab:["Cabinets","--t-cab"], common:["Common Packages","--t-common"], env:["Building Envelope","--t-env"],
   appl:["Appliances","--t-appl"], plumb:["Plumbing","--t-plumb"], hvac:["HVAC","--t-hvac"]
 };
 var RN = {
@@ -542,69 +591,71 @@ var RN = {
 };
 var ROOM_ORDER = ["Whole House","Living Room","Kitchen","Dining Room","Hallway","Master Bedroom",
   "Master Bath","Bedroom 2","Hall Bath","Bonus Room","Laundry","Garage","Porch",
-  "Front Exterior","Back Exterior","Left Exterior","Right Exterior"];
+  "Front Exterior","Back Exterior","Left Exterior","Right Exterior","Location not listed"];
 
 /* id, trade, name, rooms, note, qty, cost, photo# */
 var T = [
- [1,"paint","Replace drywall section — texture & sand (2–6 sq ft)",["Garage-01"],"Soft drywall.",1,51.88,1],
- [2,"paint","Paint HVAC registers & grills",["Bedroom - Master-01","Bedroom-01","Bathroom-01","Bonus Room-01","Bathroom - Master-01","Kitchen-01","Living Room-01"],"Discoloration.",8,45.12,2],
- [3,"paint","Interior touch-up paint, Level 4",["Bedroom - Master-01","Hallway-01","Bedroom-01","Dining Room-01","Bathroom-01","Bonus Room-01","Bathroom - Master-01","Laundry Room-01","Kitchen-01","Living Room-01"],"Touch up ceilings, walls, doors and trim. Remove all nails, screws and mollies and fill holes; minor drywall patch prep. Water-based texture where needed. Wash walls with mild detergent and sponge to salvage finish. Magic eraser on woodwork. Corner-to-corner method.",1,1000.00,3],
- [4,"paint","Custom drywall / paint — prime stains",["Garage-01"],"Paint with KILZ due to stains.",1,25.00,4],
- [5,"window","Install sliding glass door curtain rod, brushed nickel 74\"–144\"",["Bonus Room-01"],"Massive amounts of slats missing. Includes removing the old vertical blind kit and patching drywall as needed.",1,62.98,5],
- [6,"window","Install faux wood blinds — cordless, 2\", over 40\" wide",["Bedroom-01"],"Damaged.",1,94.68,6],
- [7,"window","Rescreen existing window screen",["Living Room-01"],"Torn.",1,23.73,7],
- [8,"window","Window screen — match existing",["Bedroom - Master-01"],"Damaged.",1,55.00,8],
- [9,"window","Window screen — match existing",["Bedroom-01"],"Missing.",1,55.00,9],
- [10,"window","Install vertical blind slats — white, room darkening, 3.5\" × 102\", 9-pk",["Dining Room-01"],"Multiple slats are missing.",1,23.11,10],
- [11,"door","Install sliding glass door pin lock, chrome",["Dining Room-01"],"Both open.",1,18.83,11],
- [12,"door","Install bifold / bypass door repair kit",["Bedroom-01"],"Needs to be reinstalled, however parts need to be changed out.",1,34.30,12],
- [13,"door","Install bifold / bypass door repair kit",["Living Room-01"],"Needs to be changed out due to damage.",1,34.30,13],
- [14,"door","Install bifold / bypass door repair kit",["Laundry Room-01"],"Damaged.",1,34.30,14],
- [15,"door","Adjust door",["Bedroom-01"],"Coming apart, needs secured.",1,10.00,15],
- [16,"door","Adjust door",["Bonus Room-01"],"Does not lock in — needs adjusted.",1,10.00,16],
- [17,"door","Install bifold / bypass door repair kit",["Bonus Room-01"],"Guides needed to prevent swinging.",1,15.00,17],
- [18,"floor","Install LVP — Progress Field Gray, per sq ft",["Dining Room-01"],"Two boards can be replaced. There appears to have been some sort of moisture intrusion. MSI Everlife Cyrus Collection, Progress Field Gray — see Progress specification.",3,10.74,18],
- [19,"floor","Replace baseboard",["Bonus Room-01"],"Damaged.",2,5.48,19],
- [20,"elec","Replace doorbell chime — wireless or wired",["Porch-01"],"A doorbell and chime, preferably wireless, is needed. Current wires are set up as covered.",1,69.99,20],
- [21,"elec","Replace ceiling fan pull chain",["Bonus Room-01"],"Needed.",1,9.80,21],
- [22,"elec","Replace light bulb",["Back Elevation-01"],"Out.",1,4.00,22],
- [23,"elec","Replace light bulbs",["Dining Room-01"],"Out.",2,8.00,23],
- [24,"elec","Replace light bulb",["Porch-01"],"Out.",1,4.00,24],
- [25,"elec","Replace switch / outlet cover",["Porch-01"],"Install blank.",1,2.57,25],
- [26,"elec","Replace smoke & CO detector batteries",["Bedroom - Master-01","Hallway-01","Bedroom-01","Bonus Room-01","Laundry Room-01","Living Room-01"],"Replace missing batteries in bedroom smoke detectors only. One living-area detector gets swapped to carbon monoxide and the rest are demoed as not needed per standards. The room scanned as Bonus Room is actually a bedroom.",3,32.22,26],
- [27,"elec","Replace smoke & CO detector — battery operated",["Hallway-01","Laundry Room-01","Living Room-01"],"Replace the main-area detector with a carbon monoxide detector so one is present per floor per standards. Demo all remaining. Bedrooms only need smoke detectors; one CO detector per floor is all that's required.",1,44.51,27],
- [28,"land","Adjust gate latch",["Right Elevation-01"],"The door drags on the ground.",1,15.00,28],
- [29,"land","Trim shrub / bush",["Back Elevation-01"],"Remove vines.",1,15.00,29],
- [30,"land","Demo facade — planter bed",["Front Elevation (Main)-01"],"Remove landscaping bed that is warped and rotted.",1,40.00,30],
- [31,"cab","Paint cabinet base shelf",["Kitchen-01"],"Paint white to match base.",1,20.00,31],
- [32,"cab","Paint cabinet base shelf",["Bathroom - Master-01"],"Discoloration.",1,20.00,32],
- [33,"cab","Paint cabinet base shelf",["Bathroom-01"],"Discoloration.",1,20.00,33],
- [34,"common","Install address numbers",["Front Elevation (Main)-01"],"Peeling.",1,7.60,34],
- [35,"common","Remove all debris & trash from entire property",["Bedroom - Master-01","Left Elevation-01","Right Elevation-01","Back Elevation-01","Porch-01","Hallway-01","Bedroom-01","Garage-01","Front Elevation (Main)-01","Dining Room-01","Bathroom-01","Bonus Room-01","Bathroom - Master-01","Laundry Room-01","Kitchen-01","Living Room-01"],"Remove items from home.",4,160.00,35],
- [36,"common","Pressure wash flat work, garage & trash bins",["Left Elevation-01","Right Elevation-01","Back Elevation-01","Porch-01","Garage-01","Front Elevation (Main)-01"],"Dirty.",1,150.00,36],
- [37,"appl","Install refrigerator door shelf",["Kitchen-01"],"Cracked.",1,31.47,37],
- [38,"appl","Replace anti-tip bracket, range",["Kitchen-01"],"Needed for safety.",1,22.17,38],
- [39,"appl","Replace microwave light bulb",["Kitchen-01"],"Out.",1,8.47,39],
- [40,"appl","Replace dishwasher — stainless, 24\"",["Kitchen-01"],"Remove old unit. Verify working correctly.",1,75.00,40],
- [41,"plumb","Reglaze tub / shower unit — 3 year warranty",["Bathroom - Master-01"],"Peeling.",1,568.75,41],
- [42,"plumb","Secure loose bath accessories",["Bathroom - Master-01"],"Secure loose hardware.",1,4.90,42],
- [43,"plumb","Install tub stopper, chrome 2\"",["Bathroom-01"],"Missing.",1,22.67,43],
- [44,"plumb","Caulk all wet areas",["Kitchen-01"],"Peeling.",1,20.00,44],
- [45,"plumb","Install toilet bolt caps",["Bathroom - Master-01"],"Missing.",1,8.71,45],
- [46,"plumb","Caulk all wet areas",["Bathroom - Master-01"],"Peeling.",1,20.00,46],
- [47,"plumb","Caulk all wet areas",["Bathroom-01"],"Peeling.",1,20.00,47],
- [48,"plumb","Replace towel ring, chrome",["Bathroom-01"],"Missing.",1,19.34,48],
- [49,"plumb","Replace towel bar, chrome",["Bathroom-01"],"Missing.",1,26.22,49],
- [50,"plumb","Custom plumbing — touch up tub exterior",["Bathroom-01"],"Touch up minor peeling on tub exterior.",1,30.00,50],
- [51,"hvac","Replace fiberglass HVAC air filter",["Living Room-01"],"Filter needed.",1,7.92,51]
+ [1, "paint", "Replace drywall section — texture & sand (2–6 sq ft)", ["Garage-01"], "Soft drywall.", 1, 51.88, 1],
+ [2, "paint", "Paint HVAC registers & grills", ["Bedroom - Master-01", "Bedroom-01", "Bathroom-01", "Bonus Room-01", "Bathroom - Master-01", "Kitchen-01", "Living Room-01"], "Discoloration.", 8, 45.12, 2],
+ [3, "paint", "Interior touch-up paint, Level 4", ["Bedroom - Master-01", "Hallway-01", "Bedroom-01", "Dining Room-01", "Bathroom-01", "Bonus Room-01", "Bathroom - Master-01", "Laundry Room-01", "Kitchen-01", "Living Room-01"], "Touch up ceilings, walls, doors and trim. Remove all nails, screws and mollies and fill holes; minor drywall patch prep. Water-based texture where needed. Wash walls with mild detergent and sponge to salvage finish. Magic eraser on woodwork. Corner-to-corner method.", 1, 1000.0, 3],
+ [4, "paint", "Custom drywall / paint — prime stains", ["Garage-01"], "Paint with KILZ due to stains.", 1, 25.0, 4],
+ [5, "window", "Install sliding glass door curtain rod, brushed nickel 74\"–144\"", ["Bonus Room-01"], "Massive amounts of slats missing. Includes removing the old vertical blind kit and patching drywall as needed.", 1, 62.98, 5],
+ [6, "window", "Install faux wood blinds — cordless, 2\", over 40\" wide", ["Bedroom-01"], "Damaged.", 1, 94.68, 6],
+ [7, "window", "Rescreen existing window screen", ["Living Room-01"], "Torn.", 1, 23.73, 7],
+ [8, "window", "Window screen — match existing", ["Bedroom - Master-01"], "Damaged.", 1, 55.0, 8],
+ [9, "window", "Window screen — match existing", ["Bedroom-01"], "Missing.", 1, 55.0, 9],
+ [10, "window", "Install vertical blind slats — white, room darkening, 3.5\" × 102\", 9-pk", ["Dining Room-01"], "Multiple slats are missing.", 1, 23.11, 10],
+ [11, "door", "Install sliding glass door pin lock, chrome", ["Dining Room-01"], "Both open.", 1, 18.83, 11],
+ [12, "door", "Install bifold / bypass door repair kit", ["Bedroom-01"], "Needs to be reinstalled, however parts need to be changed out.", 1, 34.3, 12],
+ [13, "door", "Install bifold / bypass door repair kit", ["Living Room-01"], "Needs to be changed out due to damage.", 1, 34.3, 13],
+ [14, "door", "Install bifold / bypass door repair kit", ["Laundry Room-01"], "Damaged.", 1, 34.3, 14],
+ [15, "door", "Adjust door", ["Bedroom-01"], "Coming apart, needs secured.", 1, 10.0, 15],
+ [16, "door", "Adjust door", ["Bonus Room-01"], "Does not lock in — needs adjusted.", 1, 10.0, 16],
+ [17, "door", "Install bifold / bypass door repair kit", ["Bonus Room-01"], "Guides needed to prevent swinging.", 1, 15.0, 17],
+ [18, "floor", "Install LVP — Progress Field Gray, per sq ft", ["Dining Room-01"], "Two boards can be replaced. There appears to have been some sort of moisture intrusion. MSI Everlife Cyrus Collection, Progress Field Gray — see Progress specification.", 3, 10.74, 18],
+ [19, "floor", "Replace baseboard", ["Bonus Room-01"], "Damaged.", 2, 5.48, 19],
+ [20, "elec", "Replace doorbell chime — wireless or wired", ["Porch-01"], "A doorbell and chime, preferably wireless, is needed. Current wires are set up as covered.", 1, 69.99, 20],
+ [21, "elec", "Replace ceiling fan pull chain", ["Bonus Room-01"], "Needed.", 1, 9.8, 21],
+ [22, "elec", "Replace light bulb", ["Back Elevation-01"], "Out.", 1, 4.0, 22],
+ [23, "elec", "Replace light bulbs", ["Dining Room-01"], "Out.", 2, 8.0, 23],
+ [24, "elec", "Replace light bulb", ["Porch-01"], "Out.", 1, 4.0, 24],
+ [25, "elec", "Replace switch / outlet cover", ["Porch-01"], "Install blank.", 1, 2.57, 25],
+ [26, "elec", "Replace smoke & CO detector batteries", ["Bedroom - Master-01", "Hallway-01", "Bedroom-01", "Bonus Room-01", "Laundry Room-01", "Living Room-01"], "Replace missing batteries in bedroom smoke detectors only. One living-area detector gets swapped to carbon monoxide and the rest are demoed as not needed per standards. The room scanned as Bonus Room is actually a bedroom.", 3, 32.22, 26],
+ [27, "elec", "Replace smoke & CO detector — battery operated", ["Hallway-01", "Laundry Room-01", "Living Room-01"], "Replace the main-area detector with a carbon monoxide detector so one is present per floor per standards. Demo all remaining. Bedrooms only need smoke detectors; one CO detector per floor is all that's required.", 1, 44.51, 27],
+ [28, "land", "Adjust gate latch", ["Right Elevation-01"], "The door drags on the ground.", 1, 15.0, 28],
+ [29, "land", "Trim shrub / bush", ["Back Elevation-01"], "Remove vines.", 1, 15.0, 29],
+ [30, "land", "Demo facade — planter bed", ["Front Elevation (Main)-01"], "Remove landscaping bed that is warped and rotted.", 1, 40.0, 30],
+ [31, "cab", "Paint cabinet base shelf", ["Kitchen-01"], "Paint white to match base.", 1, 20.0, 31],
+ [32, "cab", "Paint cabinet base shelf", ["Bathroom - Master-01"], "Discoloration.", 1, 20.0, 32],
+ [33, "cab", "Paint cabinet base shelf", ["Bathroom-01"], "Discoloration.", 1, 20.0, 33],
+ [34, "common", "Install address numbers", ["Front Elevation (Main)-01"], "Peeling.", 1, 7.6, 34],
+ [35, "common", "Remove all debris & trash from entire property", ["Bedroom - Master-01", "Left Elevation-01", "Right Elevation-01", "Back Elevation-01", "Porch-01", "Hallway-01", "Bedroom-01", "Garage-01", "Front Elevation (Main)-01", "Dining Room-01", "Bathroom-01", "Bonus Room-01", "Bathroom - Master-01", "Laundry Room-01", "Kitchen-01", "Living Room-01"], "Remove items from home.", 4, 160.0, 35],
+ [36, "common", "Pressure wash flat work, garage & trash bins", ["Left Elevation-01", "Right Elevation-01", "Back Elevation-01", "Porch-01", "Garage-01", "Front Elevation (Main)-01"], "Dirty.", 1, 150.0, 36],
+ [37, "appl", "Install refrigerator door shelf", ["Kitchen-01"], "Cracked.", 1, 31.47, 37],
+ [38, "appl", "Replace anti-tip bracket, range", ["Kitchen-01"], "Needed for safety.", 1, 22.17, 38],
+ [39, "appl", "Replace microwave light bulb", ["Kitchen-01"], "Out.", 1, 8.47, 39],
+ [40, "appl", "Replace dishwasher — stainless, 24\"", ["Kitchen-01"], "Remove old unit. Verify working correctly.", 1, 75.0, 40],
+ [41, "plumb", "Reglaze tub / shower unit — 3 year warranty", ["Bathroom - Master-01"], "Peeling.", 1, 568.75, 41],
+ [42, "plumb", "Secure loose bath accessories", ["Bathroom - Master-01"], "Secure loose hardware.", 1, 4.9, 42],
+ [43, "plumb", "Install tub stopper, chrome 2\"", ["Bathroom-01"], "Missing.", 1, 22.67, 43],
+ [44, "plumb", "Caulk all wet areas", ["Kitchen-01"], "Peeling.", 1, 20.0, 44],
+ [45, "plumb", "Install toilet bolt caps", ["Bathroom - Master-01"], "Missing.", 1, 8.71, 45],
+ [46, "plumb", "Caulk all wet areas", ["Bathroom - Master-01"], "Peeling.", 1, 20.0, 46],
+ [47, "plumb", "Caulk all wet areas", ["Bathroom-01"], "Peeling.", 1, 20.0, 47],
+ [48, "plumb", "Replace towel ring, chrome", ["Bathroom-01"], "Missing.", 1, 19.34, 48],
+ [49, "plumb", "Replace towel bar, chrome", ["Bathroom-01"], "Missing.", 1, 26.22, 49],
+ [50, "plumb", "Custom plumbing — touch up tub exterior", ["Bathroom-01"], "Touch up minor peeling on tub exterior.", 1, 30.0, 50],
+ [51, "hvac", "Replace fiberglass HVAC air filter", ["Living Room-01"], "Filter needed.", 1, 7.92, 51]
 ].map(function(r){return {id:r[0],trade:r[1],name:r[2],rooms:r[3],note:r[4],qty:r[5],cost:r[6],ph:r[7]};});
 
 /* per-scope details printed onto the change order form — set these for each new scope */
 var JOB = {
-  addr: "1038 Bridlewood Way, Brandon",   /* form's Address cell (it has no City field) */
-  short: "1038 Bridlewood Way",           /* file names and email subjects */
+  addr: "1038 Bridlewood Way, Brandon",
+  short: "1038 Bridlewood Way",
   zip: "33511",
-  scopeTotal: 3117.76,                    /* the scope's Work Order Total */
+  cityLine: "Brandon FL 33511",
+  turn: "553625",
+  scopeTotal: 3117.76,
   sendTo: "floridasgreenthumb@gmail.com"
 };
 
@@ -617,38 +668,38 @@ var STORE_ORDER = ["hd","az","ot"];
 
 /* materials — id, store, name, qty, search query, tasks it covers, caution */
 var MATS = [
- ["m1","hd","Drywall patch kit + texture spray",1,"drywall repair patch kit with texture",[1],""],
- ["m2","hd","KILZ stain-blocking primer",1,"KILZ original stain blocking primer",[4],""],
- ["m3","hd","Spray paint for HVAC registers",1,"spray paint for metal vent registers white",[2],""],
- ["m4","hd","Interior paint + supplies (touch-up)",1,"interior latex paint touch up kit",[3],"Color-match on site before you buy — walls, ceiling and trim."],
- ["m5","az","Sliding door curtain rod, brushed nickel 74\"–144\"",1,"sliding glass door curtain rod brushed nickel 144 inch",[5],""],
- ["m6","hd","Faux wood blinds, cordless 2\" (over 40\" wide)",1,"faux wood blinds cordless 2 inch 48 inch wide",[6],"Measure the window first — scope only says over 40\" wide."],
- ["m7","hd","Window screen repair kit (spline + mesh)",1,"window screen repair kit spline roller mesh",[7],""],
- ["m8","hd","Window screens, match existing",2,"window screen frame kit adjustable",[8,9],"Two screens — master bedroom and bedroom 2. Measure both. The pro desk can build them to size."],
- ["m9","az","Vertical blind slats, white room-darkening 3.5\" × 102\", 9-pk",1,"vertical blind slats white room darkening 3.5 x 102 9 pack",[10],""],
- ["m10","az","Sliding glass door pin lock, chrome",1,"sliding glass door pin lock chrome",[11],""],
- ["m11","az","Bifold / bypass door repair kits",4,"bifold door repair kit hardware",[12,13,14,17],"Four doors: bedroom 2, living room, laundry, bonus room."],
- ["m12","ot","LVP — MSI Everlife Cyrus, Progress Field Gray",1,"",[18],"Do NOT substitute. Order through the Progress-approved flooring supplier. 3 sq ft plus waste."],
- ["m13","hd","Primed baseboard",1,"primed mdf baseboard 3 1/4 inch",[19],"2 linear ft — match the existing profile."],
- ["m14","az","Wireless doorbell + chime",1,"wireless doorbell chime kit",[20],""],
- ["m15","az","Ceiling fan pull chain",1,"ceiling fan pull chain replacement",[21],""],
- ["m16","hd","LED bulbs, A19 soft white",4,"led light bulb a19 soft white 60w equivalent",[22,23,24],""],
- ["m17","hd","Blank outlet wall plate, white",1,"blank outlet wall plate white",[25],""],
- ["m18","hd","9V batteries",3,"9 volt alkaline battery",[26],""],
- ["m19","hd","Smoke + CO combination detector, battery",1,"combination smoke and carbon monoxide detector battery operated",[27],"One CO detector per floor is all that's required — the rest get demoed."],
- ["m20","az","Microwave light bulb",1,"microwave light bulb replacement",[39],""],
- ["m21","az","Refrigerator door shelf / bin",1,"refrigerator door shelf bin replacement",[37],"Model-specific. Get the model number off the doorjamb sticker before ordering."],
- ["m22","az","Range anti-tip bracket kit",1,"range anti tip bracket kit",[38],""],
- ["m23","hd","Dishwasher, stainless 24\"",1,"24 inch stainless steel dishwasher",[40],"Big-ticket item — confirm with Steve first. Schedule delivery and old-unit haul-away."],
- ["m24","hd","Cabinet paint, white semi-gloss",1,"cabinet paint white semi gloss quart",[31,32,33],""],
- ["m25","hd","House address numbers",1,"house address numbers exterior",[34],""],
- ["m26","az","Tub stopper, chrome 2\"",1,"tub drain stopper chrome 2 inch",[43],""],
- ["m27","hd","Kitchen & bath silicone caulk, white",3,"kitchen and bath silicone caulk white",[44,46,47],""],
- ["m28","az","Toilet bolt caps",1,"toilet bolt caps chrome",[45],""],
- ["m29","az","Towel ring, chrome",1,"towel ring chrome",[48],""],
- ["m30","az","Towel bar, chrome",1,"towel bar chrome",[49],""],
- ["m31","hd","Fiberglass HVAC air filter",1,"fiberglass hvac air filter",[51],"Read the size off the old filter before you go."],
- ["m32","ot","Tub reglaze — 3 year warranty",1,"",[41],"$568.75 line item. Specialty sub, not a store run — book the reglazer."]
+ ["m1", "hd", "Drywall patch kit + texture spray", 1, "drywall repair patch kit with texture", [1], ""],
+ ["m2", "hd", "KILZ stain-blocking primer", 1, "KILZ original stain blocking primer", [4], ""],
+ ["m3", "hd", "Spray paint for HVAC registers", 1, "spray paint for metal vent registers white", [2], ""],
+ ["m4", "hd", "Interior paint + supplies (touch-up)", 1, "interior latex paint touch up kit", [3], "Color-match on site before you buy — walls, ceiling and trim."],
+ ["m5", "az", "Sliding door curtain rod, brushed nickel 74\"–144\"", 1, "sliding glass door curtain rod brushed nickel 144 inch", [5], ""],
+ ["m6", "hd", "Faux wood blinds, cordless 2\" (over 40\" wide)", 1, "faux wood blinds cordless 2 inch 48 inch wide", [6], "Measure the window first — scope only says over 40\" wide."],
+ ["m7", "hd", "Window screen repair kit (spline + mesh)", 1, "window screen repair kit spline roller mesh", [7], ""],
+ ["m8", "hd", "Window screens, match existing", 2, "window screen frame kit adjustable", [8, 9], "Two screens — master bedroom and bedroom 2. Measure both. The pro desk can build them to size."],
+ ["m9", "az", "Vertical blind slats, white room-darkening 3.5\" × 102\", 9-pk", 1, "vertical blind slats white room darkening 3.5 x 102 9 pack", [10], ""],
+ ["m10", "az", "Sliding glass door pin lock, chrome", 1, "sliding glass door pin lock chrome", [11], ""],
+ ["m11", "az", "Bifold / bypass door repair kits", 4, "bifold door repair kit hardware", [12, 13, 14, 17], "Four doors: bedroom 2, living room, laundry, bonus room."],
+ ["m12", "ot", "LVP — MSI Everlife Cyrus, Progress Field Gray", 1, "", [18], "Do NOT substitute. Order through the Progress-approved flooring supplier. 3 sq ft plus waste."],
+ ["m13", "hd", "Primed baseboard", 1, "primed mdf baseboard 3 1/4 inch", [19], "2 linear ft — match the existing profile."],
+ ["m14", "az", "Wireless doorbell + chime", 1, "wireless doorbell chime kit", [20], ""],
+ ["m15", "az", "Ceiling fan pull chain", 1, "ceiling fan pull chain replacement", [21], ""],
+ ["m16", "hd", "LED bulbs, A19 soft white", 4, "led light bulb a19 soft white 60w equivalent", [22, 23, 24], ""],
+ ["m17", "hd", "Blank outlet wall plate, white", 1, "blank outlet wall plate white", [25], ""],
+ ["m18", "hd", "9V batteries", 3, "9 volt alkaline battery", [26], ""],
+ ["m19", "hd", "Smoke + CO combination detector, battery", 1, "combination smoke and carbon monoxide detector battery operated", [27], "One CO detector per floor is all that's required — the rest get demoed."],
+ ["m20", "az", "Microwave light bulb", 1, "microwave light bulb replacement", [39], ""],
+ ["m21", "az", "Refrigerator door shelf / bin", 1, "refrigerator door shelf bin replacement", [37], "Model-specific. Get the model number off the doorjamb sticker before ordering."],
+ ["m22", "az", "Range anti-tip bracket kit", 1, "range anti tip bracket kit", [38], ""],
+ ["m23", "hd", "Dishwasher, stainless 24\"", 1, "24 inch stainless steel dishwasher", [40], "Big-ticket item — confirm with Steve first. Schedule delivery and old-unit haul-away."],
+ ["m24", "hd", "Cabinet paint, white semi-gloss", 1, "cabinet paint white semi gloss quart", [31, 32, 33], ""],
+ ["m25", "hd", "House address numbers", 1, "house address numbers exterior", [34], ""],
+ ["m26", "az", "Tub stopper, chrome 2\"", 1, "tub drain stopper chrome 2 inch", [43], ""],
+ ["m27", "hd", "Kitchen & bath silicone caulk, white", 3, "kitchen and bath silicone caulk white", [44, 46, 47], ""],
+ ["m28", "az", "Toilet bolt caps", 1, "toilet bolt caps chrome", [45], ""],
+ ["m29", "az", "Towel ring, chrome", 1, "towel ring chrome", [48], ""],
+ ["m30", "az", "Towel bar, chrome", 1, "towel bar chrome", [49], ""],
+ ["m31", "hd", "Fiberglass HVAC air filter", 1, "fiberglass hvac air filter", [51], "Read the size off the old filter before you go."],
+ ["m32", "ot", "Tub reglaze — 3 year warranty", 1, "", [41], "$568.75 line item. Specialty sub, not a store run — book the reglazer."]
 ].map(function(r){return {id:r[0],store:r[1],name:r[2],qty:r[3],q:r[4],tasks:r[5],caution:r[6]};});
 
 /* a material is "settled" once every task that needs it is checked off */
@@ -720,7 +771,7 @@ try{ hideSettled = localStorage.getItem(KEY + ".hs") === "1"; }catch(e){}
 try{ cartOnly = localStorage.getItem(KEY + ".co") !== "0"; }catch(e){}
 var byId = {}; T.forEach(function(t){ byId[t.id] = t; });
 
-function roomsOf(t){ return t.rooms.map(function(r){ return RN[r] || r; }); }
+function roomsOf(t){ return t.rooms.map(function(r){ return RN[r] || r.replace(/-[0-9]+$/, ""); }); }
 function groupRoom(t){ return t.rooms.length >= 5 ? "Whole House" : null; }
 function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
@@ -739,7 +790,9 @@ function groups(){
   if(view === "room"){
     T.forEach(function(t){
       var w = groupRoom(t);
-      if(w) push(w, t); else roomsOf(t).forEach(function(r){ push(r, t); });
+      if(w) push(w, t);
+      else if(!t.rooms.length) push("Location not listed", t);
+      else roomsOf(t).forEach(function(r){ push(r, t); });
     });
     g.sort(function(a,b){
       var ia = ROOM_ORDER.indexOf(a), ib = ROOM_ORDER.indexOf(b);
@@ -805,9 +858,12 @@ function taskHTML(t, ctxRoom){
           + (t.note ? '<div class="note">' + esc(t.note) + '</div>' : "")
           + cartBtn)
     + '</div>'
-    + '<button class="thumb" data-act="photo" aria-label="Photo for ' + esc(t.name) + '">'
-    + '<img src="thumbs/' + pad(t.ph) + '.jpg" alt="" decoding="async">'
-    + '</button></div>';
+    + (t.ph
+        ? '<button class="thumb" data-act="photo" aria-label="Photo for ' + esc(t.name) + '">'
+          + '<img src="thumbs/' + pad(t.ph) + '.jpg" alt="" decoding="async">'
+          + '</button>'
+        : "")
+    + '</div>';
 }
 function pad(n){ return (n < 10 ? "0" : "") + n; }
 
@@ -822,6 +878,7 @@ function renderTasks(){
     jump += '<button data-jump="g' + i + '" class="' + (allDone ? "all-done" : "") + '">'
       + esc(g.name) + '<span class="c">' + doneN + "/" + g.items.length + '</span></button>';
     html += '<section class="grp" id="g' + i + '"><div class="grp-h"><h2>' + esc(g.name) + '</h2>'
+      + (typeof camBtn === "function" ? camBtn(g.name) : "")
       + '<div class="meta"><b>' + doneN + '</b>/' + g.items.length + '</div></div>';
     vis.forEach(function(t){ html += taskHTML(t, g.name); });
     html += '</section>';
@@ -968,8 +1025,8 @@ function storeListText(sk){
     return qtyOf(m) + "x  " + m.name
       + (m.caution ? "\n     " + m.caution : "");
   });
-  return "1038 Bridlewood Way, Brandon FL 33511 - Turn 553625\n"
-    + STORES[sk][0] + " run (" + lines.length + " items):\n" + lines.join("\n");
+  return JOB.short + ", " + JOB.cityLine + " - Turn " + JOB.turn + "\n"
+    + STORES[sk][0] + " run (" + lines.length + (lines.length === 1 ? " item):" : " items):") + "\n" + lines.join("\n");
 }
 
 /* the cart strip pinned under the header — always shows where the buying stands */
@@ -1403,6 +1460,415 @@ function coClick(e){
 document.getElementById("coOpen").onclick = coOpen;
 /*CO:JS-END*/
 
+/*SYNC:JS-BEGIN*/
+/* ============================ LIVE PROGRESS ============================ */
+/* Shares checkmarks and carts between every phone through Steve's Turn Sheets
+   script (backend/Code.gs). A change goes up the moment it's made; everyone's
+   state comes back every 15 seconds while the page is open. With no signal,
+   changes wait on this phone (in order) and go up when it's back. */
+var BACKEND_URL = "", BACKEND_KEY = "";
+var SYNC_ME = "", syncQ = [], syncBusy = false, syncSig = "";
+try{ SYNC_ME = localStorage.getItem("turnsheet.by") || ""; }catch(e){}
+try{ syncQ = JSON.parse(localStorage.getItem(KEY + ".q") || "[]") || []; }catch(e){ syncQ = []; }
+function syncSaveQ(){ try{ localStorage.setItem(KEY + ".q", JSON.stringify(syncQ)); }catch(e){} }
+
+function api(body){
+  var b = JSON.parse(JSON.stringify(body));
+  b.k = BACKEND_KEY;
+  return fetch(BACKEND_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(b)})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j || !j.ok) throw new Error((j && j.error) || "no answer");
+      return j;
+    });
+}
+
+/* server state -> this page, with this phone's unsent changes laid on top */
+function syncApply(s){
+  var done = {}, by = {}, cart = {}, got = {}, qty = {}, store = {};
+  Object.keys(s.done || {}).forEach(function(id){
+    var v = s.done[id] || [];
+    done[id] = true;
+    by[id] = {by:v[0] || "", at:v[1] ? new Date(v[1] * 1000).toISOString() : ""};
+  });
+  Object.keys(s.mats || {}).forEach(function(mid){
+    var v = s.mats[mid], m = MID[mid];
+    if(!m || !v) return;
+    if(v.c) cart[mid] = true;
+    if(v.g) got[mid] = true;
+    if(v.q && v.q !== m.qty) qty[mid] = v.q;
+    if(v.s && v.s !== m.store && STORES[v.s]) store[mid] = v.s;
+  });
+  syncQ.forEach(function(op){
+    if(op.op === "task"){
+      if(op.done){ done[op.id] = true; by[op.id] = {by:op.by, at:op.at}; }
+      else { delete done[op.id]; delete by[op.id]; }
+      return;
+    }
+    var m = MID[op.mid];
+    if(!m) return;
+    if(op.cart) cart[op.mid] = true; else delete cart[op.mid];
+    if(op.got) got[op.mid] = true; else delete got[op.mid];
+    if(op.qty !== m.qty) qty[op.mid] = op.qty; else delete qty[op.mid];
+    if(op.store !== m.store) store[op.mid] = op.store; else delete store[op.mid];
+  });
+  state.done = done; DONE_BY = by;
+  state.cart = cart; state.mats = got; state.qty = qty; state.store = store;
+  save();
+  if(typeof camServerCount === "function") camServerCount(s.photos || 0);
+  var sig = JSON.stringify([done, by, cart, got, qty, store]);
+  if(sig === syncSig) return;
+  syncSig = sig;
+  /* don't yank a field out from under someone who's typing in it */
+  var a = document.activeElement;
+  if(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && document.getElementById("wrap").contains(a)) return;
+  render();
+  if(typeof lb !== "undefined" && lb && typeof paint === "function") paint();
+}
+
+function syncPush(op){
+  op.turn = JOB.turn; op.by = SYNC_ME; op.at = new Date().toISOString();
+  /* a newer change to the same task / material replaces an older unsent one */
+  syncQ = syncQ.filter(function(o){
+    return !(o.op === op.op && (o.op === "task" ? o.id === op.id : o.mid === op.mid));
+  });
+  syncQ.push(op);
+  syncSaveQ();
+  syncFlush();
+}
+function syncFlush(){
+  if(syncBusy || !syncQ.length || !BACKEND_URL) return;
+  syncBusy = true;
+  var op = syncQ[0];
+  api(op).then(function(s){
+    syncQ = syncQ.filter(function(o){ return o !== op; });
+    syncSaveQ();
+    syncBusy = false;
+    setMode("shared");
+    if(syncQ.length) syncFlush(); else syncApply(s);
+  }).catch(function(){
+    syncBusy = false;
+    setMode("offline");
+  });
+}
+function syncPoll(){
+  if(!BACKEND_URL || document.hidden) return;
+  if(syncQ.length){ syncFlush(); return; }
+  api({op:"state", turn:JOB.turn})
+    .then(function(s){ setMode("shared"); syncApply(s); })
+    .catch(function(){ setMode("offline"); });
+}
+function syncStart(){
+  setMode("connecting");
+  syncPoll();
+  setInterval(syncPoll, 15000);
+  window.addEventListener("online", syncPoll);
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden) syncPoll(); });
+}
+
+/* the page's save hooks now go to the shared list */
+commitTask = function(id, done){
+  if(BACKEND_URL) syncPush({op:"task", id:String(id), done:!!done});
+};
+commitMat = function(mid){
+  var m = MID[mid];
+  if(!m || !BACKEND_URL) return;
+  syncPush({op:"mat", mid:mid, cart:!!state.cart[mid], got:!!state.mats[mid], qty:qtyOf(m), store:storeOf(m)});
+};
+/*SYNC:JS-END*/
+
+/*CAM:JS-BEGIN*/
+/* ============================ CAMERA ============================ */
+/* A camera button on every room. Photos are shrunk on the phone, kept in the
+   phone's own storage (IndexedDB) and uploaded one at a time to Steve's Google
+   Drive through the Turn Sheets script:  Turn Photos / <house> / <room>.
+   No signal? They wait on the phone and go when it's back. If uploads aren't
+   switched on, "Send all photos" shares them instead. */
+var CAM_MAX = 1600, CAM_Q = 0.8;
+var camDB = null, camItems = [], camRoom = "", camBusy = false, camEl = null, camUrls = [], camCrew = null;
+var CAM_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" '
+  + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+  + '<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h2l1.2-1.6h4.6L13.5 5h2A1.5 1.5 0 0 1 17 6.5v8a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5z"/>'
+  + '<circle cx="10" cy="10.5" r="3"/></svg>';
+function camOn(){ return typeof BACKEND_URL === "string" && !!BACKEND_URL; }
+
+/* ---- the phone's photo storage ---- */
+function camOpenDB(){
+  return new Promise(function(res){
+    try{
+      var r = indexedDB.open("turnsheet-photos", 1);
+      r.onupgradeneeded = function(){ r.result.createObjectStore("p", {keyPath:"id"}); };
+      r.onsuccess = function(){ res(r.result); };
+      r.onerror = function(){ res(null); };
+    }catch(e){ res(null); }
+  });
+}
+function camStore(mode){ return camDB.transaction("p", mode).objectStore("p"); }
+function camPut(it){
+  return new Promise(function(res){
+    if(!camDB) return res();
+    try{ var q = camStore("readwrite").put(it); q.onsuccess = q.onerror = function(){ res(); }; }
+    catch(e){ res(); }
+  });
+}
+function camRemove(id){
+  return new Promise(function(res){
+    if(!camDB) return res();
+    try{ var q = camStore("readwrite").delete(id); q.onsuccess = q.onerror = function(){ res(); }; }
+    catch(e){ res(); }
+  });
+}
+function camLoad(){
+  return new Promise(function(res){
+    if(!camDB) return res([]);
+    try{ var q = camStore("readonly").getAll(); q.onsuccess = function(){ res(q.result || []); }; q.onerror = function(){ res([]); }; }
+    catch(e){ res([]); }
+  });
+}
+
+/* ---- taking a photo ---- */
+function camShrink(file){
+  return new Promise(function(res){
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function(){
+      var w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, CAM_MAX / Math.max(w, h));
+      var c = document.createElement("canvas");
+      c.width = Math.round(w * k); c.height = Math.round(h * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(function(b){ res(b || file); }, "image/jpeg", CAM_Q);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); res(file); };
+    img.src = url;
+  });
+}
+function camName(room, d, id){
+  var p = function(n){ return (n < 10 ? "0" : "") + n; };
+  var h = d.getHours(), ap = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return room + " " + d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " "
+    + h + "-" + p(d.getMinutes()) + "-" + p(d.getSeconds()) + " " + ap + " " + id.slice(-4) + ".jpg";
+}
+var camInput = document.createElement("input");
+camInput.type = "file";
+camInput.accept = "image/*";
+camInput.setAttribute("capture", "environment");
+camInput.hidden = true;
+document.body.appendChild(camInput);
+camInput.addEventListener("change", function(){
+  var f = camInput.files && camInput.files[0];
+  camInput.value = "";
+  if(f) camAdd(f, camRoom);
+});
+function camTake(room){ camRoom = room; camInput.click(); }
+function camAdd(file, room){
+  camToast("Saving " + room + " photo…");
+  camShrink(file).then(function(blob){
+    var d = new Date(), id = d.getTime().toString(36) + Math.random().toString(36).slice(2, 6);
+    var it = {id:id, turn:JOB.turn, house:JOB.short, room:room, at:d.toISOString(),
+              name:camName(room, d, id), status:"waiting", blob:blob};
+    camItems.push(it);
+    return camPut(it).then(function(){
+      camRefresh();
+      camToast(camOn() ? room + " photo saved · uploading" : room + " photo saved on this phone");
+      camPump();
+    });
+  }).catch(function(e){ camToast("That photo couldn't be saved: " + ((e && e.message) || e)); });
+}
+
+/* ---- uploading, one at a time ---- */
+function camB64(blob){
+  return new Promise(function(res, rej){
+    var r = new FileReader();
+    r.onload = function(){ res(String(r.result).split(",")[1]); };
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+}
+function camPump(){
+  if(camBusy || !camOn() || navigator.onLine === false) return;
+  var next = camItems.filter(function(i){ return i.status === "waiting"; })[0];
+  if(!next) return;
+  camBusy = true;
+  camB64(next.blob).then(function(data){
+    return api({op:"photo", turn:JOB.turn, house:JOB.short, room:next.room, name:next.name, data:data});
+  }).then(function(){
+    next.status = "sent"; next.err = "";
+    return camPut(next);
+  }).catch(function(e){
+    next.status = "failed"; next.err = String((e && e.message) || e);
+    return camPut(next);
+  }).then(function(){
+    camBusy = false;
+    camRefresh();
+    if(camItems.some(function(i){ return i.status === "waiting"; })) setTimeout(camPump, 250);
+  });
+}
+function camRetry(){
+  camItems.forEach(function(i){ if(i.status === "failed") i.status = "waiting"; });
+  camPump();
+}
+function camServerCount(n){ camCrew = n; if(camEl) camPanel(); }
+
+/* ---- what shows on the page ---- */
+function camCount(room){
+  var a = camItems.filter(function(i){ return room == null || i.room === room; });
+  return {n:a.length, left:a.filter(function(i){ return i.status !== "sent"; }).length,
+          bad:a.filter(function(i){ return i.status === "failed"; }).length};
+}
+/* called by the page for each room heading (room view only) */
+function camBtn(room){
+  if(view !== "room") return "";
+  var c = camCount(room);
+  return '<button class="cam-btn' + (c.n ? " has" : "") + (c.bad ? " bad" : "") + '" data-cam="' + esc(room)
+    + '" aria-label="Take a photo in ' + esc(room) + '">' + CAM_ICON
+    + (c.n ? '<span class="cam-n mono">' + c.n + '</span>' : '')
+    + (c.left ? '<span class="cam-wait">' + (c.bad ? "retry" : c.left + " to send") + '</span>' : '')
+    + '</button>';
+}
+function camRefresh(){
+  if(view === "room") render();
+  var c = camCount(null), b = document.getElementById("camAll");
+  if(b){
+    b.querySelector(".cam-all-n").textContent = c.n;
+    b.classList.toggle("waiting", c.left > 0);
+    b.classList.toggle("bad", c.bad > 0);
+  }
+  if(camEl) camPanel();
+}
+var camToastT = null;
+function camToast(t){
+  var el = document.getElementById("camToast");
+  if(!el){ el = document.createElement("div"); el.id = "camToast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.textContent = t;
+  el.className = "show";
+  clearTimeout(camToastT);
+  camToastT = setTimeout(function(){ el.className = ""; }, 2600);
+}
+
+/* ---- the photos panel ---- */
+function camPanelOpen(){
+  if(camEl) return;
+  camEl = document.createElement("div");
+  camEl.className = "co";
+  camEl.setAttribute("role", "dialog");
+  camEl.setAttribute("aria-modal", "true");
+  camEl.setAttribute("aria-labelledby", "camT");
+  camEl.innerHTML = '<div class="co-top">'
+    + '<button class="co-back" data-camp="close" aria-label="Back to the scope">&larr; Scope</button>'
+    + '<div class="co-title"><span id="camT">Photos</span><small>' + esc(JOB.short) + '</small></div>'
+    + '</div><div class="co-body"></div>';
+  document.body.appendChild(camEl);
+  document.body.style.overflow = "hidden";
+  camEl.addEventListener("click", camPanelClick);
+  camPanel();
+}
+function camPanelClose(){
+  if(!camEl) return;
+  camUrls.forEach(function(u){ URL.revokeObjectURL(u); }); camUrls = [];
+  camEl.remove(); camEl = null;
+  document.body.style.overflow = "";
+}
+function camPanel(){
+  if(!camEl) return;
+  camUrls.forEach(function(u){ URL.revokeObjectURL(u); }); camUrls = [];
+  var c = camCount(null), rooms = [];
+  camItems.forEach(function(i){ if(rooms.indexOf(i.room) === -1) rooms.push(i.room); });
+  var h = '<section class="co-card">';
+  if(camOn()){
+    h += '<p class="cam-p">Photos upload to Steve&rsquo;s Google Drive by themselves: '
+      + '<b>Turn Photos / ' + esc(JOB.short) + ' / <i>room</i></b>.</p>'
+      + '<p class="cam-p mono">' + c.n + ' on this phone &middot; ' + (c.n - c.left) + ' uploaded'
+      + (c.left ? ' &middot; ' + c.left + ' waiting' : '') + '</p>'
+      + (camCrew != null ? '<p class="cam-p">Whole crew so far: <b class="mono">' + camCrew + '</b> in Drive.</p>' : '')
+      + (c.left && navigator.onLine === false ? '<p class="cam-p warn">No signal. They&rsquo;ll upload when it&rsquo;s back.</p>' : '')
+      + (c.bad ? '<p class="cam-p warn">' + c.bad + ' didn&rsquo;t go through. '
+        + esc((camItems.filter(function(i){ return i.status === "failed"; })[0] || {}).err || "") + '</p>' : '');
+  } else {
+    h += '<p class="cam-p">Automatic upload isn&rsquo;t switched on yet, so photos are saved on this phone. '
+      + 'Use <b>Send all photos</b> to share them.</p>';
+  }
+  h += '<div class="co-acts">'
+    + (c.n ? '<button class="btn' + (camOn() ? '' : ' primary') + '" data-camp="share">Send all photos</button>' : '')
+    + (c.bad ? '<button class="btn primary" data-camp="retry">Try again</button>' : '')
+    + '</div></section>';
+  if(!c.n) h += '<p class="cam-empty">No photos yet. Tap the camera on any room.</p>';
+  rooms.forEach(function(room){
+    var list = camItems.filter(function(i){ return i.room === room; });
+    h += '<section class="co-card"><h3 class="co-h3">' + esc(room) + ' <span class="mono">' + list.length + '</span></h3><div class="cam-grid">';
+    list.forEach(function(it){
+      var u = URL.createObjectURL(it.blob); camUrls.push(u);
+      var st = it.status === "sent" ? "sent" : (it.status === "failed" ? "failed" : "waiting");
+      h += '<figure class="cam-ph ' + st + '"><img src="' + u + '" alt="' + esc(room) + ' photo">'
+        + '<figcaption>' + (st === "sent" ? "uploaded" : st === "failed" ? "not sent" : "waiting") + '</figcaption>'
+        + '<button class="cam-x" data-camp="del" data-id="' + esc(it.id) + '" aria-label="Delete this photo">&times;</button></figure>';
+    });
+    h += '</div></section>';
+  });
+  if(c.n && c.n > c.left){
+    h += '<button class="co-new" data-camp="clear">Remove uploaded photos from this phone</button>';
+  }
+  camEl.querySelector(".co-body").innerHTML = h;
+}
+function camShare(){
+  var files = camItems.map(function(i){ return new File([i.blob], i.name, {type:"image/jpeg"}); });
+  if(navigator.canShare && navigator.canShare({files:files})){
+    navigator.share({files:files, title:"Photos - " + JOB.short}).catch(function(){});
+    return;
+  }
+  camItems.forEach(function(i, n){
+    setTimeout(function(){
+      var u = URL.createObjectURL(i.blob), a = document.createElement("a");
+      a.href = u; a.download = i.name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(u); }, 5000);
+    }, n * 300);
+  });
+}
+function camPanelClick(e){
+  var b = e.target.closest("[data-camp]");
+  if(!b) return;
+  var a = b.dataset.camp;
+  if(a === "close") return camPanelClose();
+  if(a === "share") return camShare();
+  if(a === "retry") return camRetry();
+  if(a === "del"){
+    var it = camItems.filter(function(i){ return i.id === b.dataset.id; })[0];
+    if(!it) return;
+    return ask("Delete this photo?",
+      it.status === "sent" ? "It stays in Drive; this only removes it from this phone." : "It hasn't been uploaded yet, so it will be gone for good.",
+      "Delete", function(){
+        camItems = camItems.filter(function(i){ return i !== it; });
+        camRemove(it.id).then(camRefresh);
+      });
+  }
+  if(a === "clear"){
+    return ask("Remove uploaded photos from this phone?", "They stay in Drive. Photos still waiting to upload are kept.",
+      "Remove", function(){
+        var gone = camItems.filter(function(i){ return i.status === "sent"; });
+        camItems = camItems.filter(function(i){ return i.status !== "sent"; });
+        Promise.all(gone.map(function(i){ return camRemove(i.id); })).then(camRefresh);
+      });
+  }
+}
+
+/* ---- wiring ---- */
+document.getElementById("wrap").addEventListener("click", function(e){
+  var b = e.target.closest("[data-cam]");
+  if(b) camTake(b.dataset.cam);
+});
+document.getElementById("camAll").addEventListener("click", camPanelOpen);
+camOpenDB().then(function(db){ camDB = db; return camLoad(); }).then(function(all){
+  camItems = all.filter(function(i){ return i.turn === JOB.turn; })
+    .sort(function(a, b){ return a.at < b.at ? -1 : 1; });
+  camRefresh();
+  camPump();
+});
+window.addEventListener("online", camRetry);
+document.addEventListener("visibilitychange", function(){ if(!document.hidden) camRetry(); });
+setInterval(camRetry, 30000);
+/*CAM:JS-END*/
+
 /* ============================ CONFIRM ============================ */
 var askEl = null, askPrev = null;
 function ask(title, detail, okLabel, onYes){
@@ -1431,7 +1897,7 @@ function closeAsk(){
   if(!askEl) return;
   askEl.remove(); askEl = null;
   document.removeEventListener("keydown", askKeys);
-  if(!lb && !coEl) document.body.style.overflow = "";
+  if(!lb && !coEl && !camEl) document.body.style.overflow = "";
   if(askPrev && askPrev.focus) { try{ askPrev.focus(); }catch(e){} }
   askPrev = null;
 }
@@ -1444,7 +1910,7 @@ function setDone(id, yes, after){
   }
   ask("Mark this complete?", byId[id].name, "Yes, complete it", function(){
     state.done[id] = true;
-    DONE_BY[id] = {by:UID || "", at:new Date().toISOString()};
+    DONE_BY[id] = {by:UID || (typeof SYNC_ME === "string" ? SYNC_ME : "") || "", at:new Date().toISOString()};
     save(); commitTask(id, true);
     if(after) after();
   });
@@ -1456,7 +1922,8 @@ function openPhoto(id){
   lbList = (view === "mat" ? T : groups().reduce(function(a, g){
     g.items.filter(visible).forEach(function(t){ if(a.indexOf(t) === -1) a.push(t); }); return a;
   }, []));
-  if(lbList.indexOf(byId[id]) === -1) lbList = T.slice();
+  lbList = lbList.filter(function(t){ return t.ph; });
+  if(lbList.indexOf(byId[id]) === -1) lbList = T.filter(function(t){ return t.ph; });
   lbIdx = lbList.indexOf(byId[id]);
   document.body.style.overflow = "hidden";
   lb = document.createElement("div");
@@ -1706,6 +2173,7 @@ function setMode(m){
   el.className = "mode " + m;
   el.textContent = m === "shared" ? "Shared with your crew — live"
     : m === "connecting" ? "Connecting…"
+    : m === "offline" ? "No signal. Changes will sync"
     : "This device only";
 }
 
@@ -1713,7 +2181,8 @@ function whoAndWhen(id){
   var r = DONE_BY[id];
   if(!r) return "";
   var bits = [];
-  var nm = r.by ? (r.by === UID ? "You" : (NAMES[r.by] || "")) : "";
+  var me = typeof SYNC_ME === "string" ? SYNC_ME : "";
+  var nm = r.by ? ((r.by === UID || (me && r.by === me)) ? "You" : (NAMES[r.by] || (/^u_/.test(r.by) ? "" : r.by))) : "";
   if(nm) bits.push(nm);
   if(r.at){
     var d = new Date(r.at);
@@ -1785,6 +2254,7 @@ function onMats(snap){
 }
 
 (function connect(){
+  if(typeof BACKEND_URL === "string" && BACKEND_URL && typeof syncStart === "function"){ syncStart(); return; }
   if(!window.claude || typeof window.claude.use !== "function"){ setMode("local"); return; }
   setMode("connecting");
   Promise.all([window.claude.use("db"), window.claude.use("user")]).then(function(r){
