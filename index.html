@@ -434,6 +434,32 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .co-hist .w span{display:block;font-size:12.5px;font-weight:400;color:var(--muted);margin-top:1px}
 /*CO:CSS-END*/
 
+/* ---------- single-list cart ---------- */
+.addbtn{
+  display:inline-flex;align-items:center;gap:7px;margin-top:9px;padding:9px 15px;border-radius:9px;
+  border:1.5px solid var(--flag);background:var(--flag-soft);color:var(--flag);
+  font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:15.5px;letter-spacing:.02em;
+}
+.addbtn .add-plus{font-size:19px;line-height:1;margin-top:-1px}
+.incart{
+  display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap;
+  padding:8px 11px;border:1.5px solid var(--done);border-radius:9px;background:var(--done-soft);
+}
+.incart-l{
+  display:inline-flex;align-items:center;gap:5px;font-family:"Barlow Semi Condensed",sans-serif;
+  font-weight:700;font-size:13.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--done);
+}
+.incart-l svg{width:15px;height:15px}
+.incart-x{
+  margin-left:auto;padding:6px 10px;border-radius:7px;font-size:12.5px;font-weight:600;
+  color:var(--muted);border:1px solid var(--line);background:transparent;
+}
+.m-find{display:flex;flex-wrap:wrap;gap:5px 10px;align-items:baseline;margin-top:9px;font-size:12.5px;color:var(--muted)}
+.m-find a{color:var(--brand,var(--done));font-weight:600;text-decoration:none;
+  border-bottom:1px solid color-mix(in srgb,var(--done) 40%,transparent);padding-bottom:1px}
+.cb-open{margin-left:auto;flex:0 0 auto;font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;
+  font-size:13px;color:var(--brand,var(--done));padding-left:8px}
+.cb-got{flex:0 0 auto;font-size:12px;color:var(--done);opacity:.8}
 /*CAM:CSS-BEGIN*/
 /* ---------- camera ---------- */
 .grp-h .cam-btn{
@@ -818,30 +844,7 @@ function taskHTML(t, ctxRoom){
     });
   }
   if(t.qty > 1) pills += '<span class="pill qty">&times;' + t.qty + '</span>';
-  /* Pick the cart right here — one tap sends it to that store, and tapping a
-     different one moves it. The suggested store is pre-lit so the common case
-     is still a single tap. */
-  var mm = matsFor(t.id);
-  var cartBtn = "";
-  if(mm.length){
-    var m0 = mm[0];
-    var inCart = !!state.cart[m0.id];
-    var cur = storeOf(m0);
-    cartBtn = '<div class="cartpick' + (inCart ? " in" : "") + '">'
-      + '<span class="cp-l">' + (inCart ? "In cart &mdash; get it at" : "Add to cart") + '</span>'
-      + STORE_ORDER.map(function(sk){
-          var on = inCart && cur === sk;
-          var hint = !inCart && cur === sk;
-          return '<button class="cp-b' + (on ? " on" : "") + (hint ? " hint" : "") + '"'
-            + ' data-act="pick" data-mid="' + m0.id + '" data-sk="' + sk + '"'
-            + ' aria-pressed="' + on + '" title="' + esc(STORES[sk][0]) + '">'
-            + esc(STORES[sk][3]) + '</button>';
-        }).join("")
-      + (inCart
-          ? '<button class="cp-x" data-act="unpick" data-mid="' + m0.id + '">Remove</button>'
-          : "")
-      + '</div>';
-  }
+  var cartBtn = taskCartBtn(t);
 
   return '<div class="task' + (d ? " done" : "") + '" data-id="' + t.id + '" style="--tc:var(' + TRADES[t.trade][1] + ')">'
     + '<button class="tick" data-act="tick" aria-pressed="' + d + '" aria-label="Mark ' + esc(t.name) + ' complete">'
@@ -893,163 +896,128 @@ function matVisible(m){
   if(hideDone && state.mats[m.id]) return false;
   if(hideSettled && matSettled(m) && !state.mats[m.id]) return false;
   if(!query) return true;
-  var s = (m.name + " " + m.caution + " " + STORES[storeOf(m)][0]).toLowerCase();
-  return s.indexOf(query) !== -1;
+  return (m.name + " " + m.caution).toLowerCase().indexOf(query) !== -1;
+}
+
+/* One editable shopping list. A material's amount defaults to the scope count
+   and each line can be bumped up or down; there is no store split any more. */
+function taskCartBtn(t){
+  var mm = matsFor(t.id);
+  if(!mm.length) return "";
+  var m = mm[0], inCart = !!state.cart[m.id];
+  if(!inCart){
+    return '<button class="addbtn" data-act="add" data-mid="' + m.id + '">'
+      + '<span class="add-plus">+</span>Add ' + (m.qty > 1 ? m.qty + " " : "") + 'to list</button>';
+  }
+  return '<div class="incart">'
+    + '<span class="incart-l"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8.5 3.4 3.4L13 5"/></svg>In list</span>'
+    + '<div class="qty">'
+      + '<button data-qty="' + m.id + '" data-d="-1" aria-label="One fewer">&minus;</button>'
+      + '<input class="mono" type="number" inputmode="numeric" min="1" max="99" data-qin="' + m.id + '" id="q_' + m.id + '" value="' + qtyOf(m) + '" aria-label="How many">'
+      + '<button data-qty="' + m.id + '" data-d="1" aria-label="One more">+</button>'
+    + '</div>'
+    + '<button class="incart-x" data-act="remove" data-mid="' + m.id + '">Remove</button>'
+    + '</div>';
 }
 
 function renderMats(){
   var inCart = MATS.filter(function(m){ return state.cart[m.id]; });
   var gotN = inCart.filter(function(m){ return state.mats[m.id]; }).length;
-  var pool = cartOnly ? inCart : MATS;
+  var pool = (cartOnly ? inCart : MATS).filter(matVisible);
 
   var html = '<div class="mat-intro">'
     + (cartOnly
         ? (inCart.length
-            ? '<b>' + (inCart.length - gotN) + ' in your cart</b>, split by where to get it. '
-              + 'Tick an item once it&rsquo;s in the truck.'
-            : '<b>Your cart is empty.</b> Go through the scope and hit <b>Add to cart</b> on anything you need to buy &mdash; '
-              + 'it lands here under the right store. Or add everything the scope calls for in one go.')
-        : '<b>Everything the scope needs</b> &mdash; all ' + MATS.length + ' items, whether or not they&rsquo;re in your cart. '
-          + 'Hit <b>+</b> on any line to drop it in.')
+            ? '<b>' + (inCart.length - gotN) + ' still to get.</b> Change any amount, or tick it once it&rsquo;s in the truck.'
+            : '<b>Your list is empty.</b> Go through the scope and hit <b>Add</b> on anything you need to buy. Each one lands here with the amount the scope calls for &mdash; change it if you need more or fewer.')
+        : '<b>Everything the scope needs</b> &mdash; all ' + MATS.length + ' items. Hit <b>Add</b> on any line to drop it in the list.')
     + '<div class="bulk">'
-    + '<div class="seg" role="tablist" aria-label="Cart view">'
-      + '<button role="tab" data-cart-view="1" aria-selected="' + cartOnly + '">My cart'
-        + (inCart.length ? ' <span class="mono">' + inCart.length + '</span>' : "") + '</button>'
+    + '<div class="seg" role="tablist" aria-label="List view">'
+      + '<button role="tab" data-cart-view="1" aria-selected="' + cartOnly + '">My list' + (inCart.length ? ' <span class="mono">' + inCart.length + '</span>' : "") + '</button>'
       + '<button role="tab" data-cart-view="0" aria-selected="' + !cartOnly + '">All ' + MATS.length + '</button>'
     + '</div>'
     + (inCart.length < MATS.length ? '<button class="btn primary" id="addAll">Add all ' + MATS.length + '</button>' : "")
-    + (inCart.length ? '<button class="btn" id="emptyCart">Empty cart</button>' : "")
+    + (inCart.length ? '<button class="btn" id="emptyCart">Empty list</button>' : "")
     + '</div>'
     + (inCart.length
-        ? '<div class="bulk"><label class="chk-hide"><input type="checkbox" id="hideSettled"'
-          + (hideSettled ? " checked" : "") + '> Hide what&rsquo;s no longer needed</label>'
+        ? '<div class="bulk">'
+          + '<button class="btn" id="copyList">Copy list</button>'
+          + '<button class="btn" id="openAll">Look up all on Home Depot</button>'
+          + '<label class="chk-hide"><input type="checkbox" id="hideSettled"' + (hideSettled ? " checked" : "") + '> Hide what&rsquo;s no longer needed</label>'
           + '<button class="btn" id="clearMats">Untick all</button></div>'
         : "")
     + '</div>';
 
-  var jump = "";
-  STORE_ORDER.forEach(function(sk, i){
-    var all = pool.filter(function(m){ return storeOf(m) === sk; });
-    var vis = all.filter(matVisible);
-    var got = all.filter(function(m){ return state.mats[m.id]; }).length;
-    jump += '<button data-jump="s' + i + '" class="' + (all.length && got === all.length ? "all-done" : "") + '">'
-      + esc(STORES[sk][0]) + '<span class="c">' + (all.length - got) + '</span></button>';
+  if(!pool.length){
+    html += '<div class="empty">' + (query
+        ? 'No materials match &ldquo;' + esc(query) + '&rdquo;.'
+        : (cartOnly ? 'Nothing in your list yet. Tap a trade or room and hit Add.' : 'No materials.')) + '</div>';
+    document.getElementById("wrap").innerHTML = html;
+    document.getElementById("jump").innerHTML = "";
+    return;
+  }
 
-    /* every store always gets a section, even empty — otherwise you can't tell
-       Amazon and Other exist until something happens to land in them */
-    html += '<section class="grp store' + (all.length ? "" : " store-empty") + '" id="s' + i + '" data-store="' + sk + '">'
-      + '<div class="store-h"><div class="store-t"><h2>' + esc(STORES[sk][0]) + '</h2>'
-      + '<div class="store-s">' + esc(STORES[sk][1]) + '</div></div>'
-      + '<div class="meta mono">' + (all.length ? '<b>' + (all.length - got) + '</b> to get' : "empty") + '</div></div>';
+  html += '<section class="grp"><div class="grp-h"><h2>Shopping list</h2>'
+    + '<div class="meta mono"><b>' + pool.filter(function(m){ return !state.mats[m.id]; }).length + '</b> to get</div></div>';
 
-    if(!all.length){
-      html += '<div class="store-none">'
-        + (cartOnly
-            ? 'Nothing here yet. Items you send to ' + esc(STORES[sk][0]) + ' land in this cart.'
-            : 'No items assigned to ' + esc(STORES[sk][0]) + '.')
-        + '</div></section>';
-      return;
-    }
-
-    html += '<div class="store-acts">'
-      + '<button class="btn" data-copy="' + sk + '">Copy this list</button>'
-      + (STORES[sk][2]
-          ? '<button class="btn" data-openall="' + sk + '">Open all ' + (all.length - got) + ' searches</button>'
-          : "")
+  pool.forEach(function(m){
+    var d = !!state.mats[m.id];
+    var settled = matSettled(m);
+    var forT = m.tasks.map(function(i){ return "#" + i; }).join(", ");
+    var isIn = !!state.cart[m.id];
+    html += '<div class="mat' + (d ? " done" : "") + (settled && !d ? " settled" : "") + '" data-mid="' + m.id + '">'
+      + (cartOnly
+          ? '<button class="tick" data-act="mtick" aria-pressed="' + d + '" aria-label="Got ' + esc(m.name) + '"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8.5 3.4 3.4L13 5"/></svg></button>'
+          : '<button class="tick add' + (isIn ? " in" : "") + '" data-act="mcart" aria-pressed="' + isIn + '" aria-label="' + (isIn ? "Remove " : "Add ") + esc(m.name) + '">'
+            + (isIn ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8.5 3.4 3.4L13 5"/></svg>' : '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 3.5v9M3.5 8h9"/></svg>')
+            + '</button>')
+      + '<div class="m-body"><div class="m-name">' + esc(m.name) + '</div>'
+      + '<div class="m-for">Task ' + forT + (settled && !d ? ' &middot; <span class="settled-tag">tasks done &mdash; may not need it</span>' : "") + '</div>'
+      + '<div class="qty">'
+        + '<button data-qty="' + m.id + '" data-d="-1" aria-label="One fewer">&minus;</button>'
+        + '<input class="mono" type="number" inputmode="numeric" min="1" max="99" data-qin="' + m.id + '" id="q_' + m.id + '" value="' + qtyOf(m) + '" aria-label="How many of ' + esc(m.name) + '">'
+        + '<button data-qty="' + m.id + '" data-d="1" aria-label="One more">+</button>'
+        + (qtyOf(m) !== m.qty ? '<button class="qty-rst" data-qrst="' + m.id + '">scope says ' + m.qty + ' &mdash; reset</button>' : '<span class="qty-lbl">from the scope</span>')
+      + '</div>'
+      + (m.q ? '<div class="m-find">Look it up: '
+          + '<a href="' + STORES.hd[2] + encodeURIComponent(m.q) + '" target="_blank" rel="noopener">Home Depot</a>'
+          + '<a href="' + STORES.az[2] + encodeURIComponent(m.q) + '" target="_blank" rel="noopener">Amazon</a>'
+          + '</div>' : "")
+      + '</div>'
+      + '<div class="m-buy"></div>'
+      + (m.caution ? '<div class="m-note">' + esc(m.caution) + '</div>' : "")
       + '</div>';
-
-    if(!vis.length){
-      html += '<div class="store-none">All ' + all.length + ' picked up.</div></section>';
-      return;
-    }
-
-    vis.forEach(function(m){
-      var d = !!state.mats[m.id];
-      var settled = matSettled(m);
-      var forT = m.tasks.map(function(i){ return "#" + i; }).join(", ");
-      var isIn = !!state.cart[m.id];
-      html += '<div class="mat' + (d ? " done" : "") + (settled && !d ? " settled" : "") + '" data-mid="' + m.id + '">'
-        + (cartOnly
-            ? '<button class="tick" data-act="mtick" aria-pressed="' + d + '" aria-label="Got ' + esc(m.name) + '">'
-              + '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8.5 3.4 3.4L13 5"/></svg>'
-              + '</button>'
-            : '<button class="tick add' + (isIn ? " in" : "") + '" data-act="mcart" aria-pressed="' + isIn + '"'
-              + ' aria-label="' + (isIn ? "Remove " : "Add ") + esc(m.name) + ' to cart">'
-              + (isIn
-                  ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8.5 3.4 3.4L13 5"/></svg>'
-                  : '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 3.5v9M3.5 8h9"/></svg>')
-              + '</button>')
-        + '<div class="m-body"><div class="m-name">' + esc(m.name) + '</div>'
-        + '<div class="m-for">Task ' + forT
-          + (settled && !d ? ' &middot; <span class="settled-tag">tasks done &mdash; may not need it</span>' : "")
-          + '</div>'
-        + '<div class="qty">'
-          + '<button data-qty="' + m.id + '" data-d="-1" aria-label="One fewer">&minus;</button>'
-          + '<input class="mono" type="number" inputmode="numeric" min="1" max="99" data-qin="' + m.id + '"'
-            + ' id="q_' + m.id + '" value="' + qtyOf(m) + '" aria-label="How many of ' + esc(m.name) + '">'
-          + '<button data-qty="' + m.id + '" data-d="1" aria-label="One more">+</button>'
-          + (qtyOf(m) !== m.qty
-              ? '<button class="qty-rst" data-qrst="' + m.id + '">scope says ' + m.qty + ' &mdash; reset</button>'
-              : '<span class="qty-lbl">from the scope</span>')
-          + '</div>'
-        + '<div class="swap"><span class="swap-l">Get it at</span>'
-          + STORE_ORDER.map(function(s2){
-              return '<button data-store="' + m.id + '" data-sk="' + s2 + '"'
-                + (storeOf(m) === s2 ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"')
-                + '>' + esc(STORES[s2][3]) + '</button>';
-            }).join("")
-          + (storeOf(m) !== m.store
-              ? '<button class="qty-rst" data-srst="' + m.id + '">moved &mdash; reset</button>' : "")
-          + '</div>'
-        + '</div>'
-        + (STORES[storeOf(m)][2] && m.q
-            ? '<div class="m-buy"><a href="' + STORES[storeOf(m)][2] + encodeURIComponent(m.q)
-              + '" target="_blank" rel="noopener" aria-label="Find ' + esc(m.name) + ' at ' + esc(STORES[storeOf(m)][0]) + '">'
-              + STORES[storeOf(m)][3] + '</a></div>'
-            : '<div class="m-buy"></div>')
-        + (m.caution ? '<div class="m-note">' + esc(m.caution) + '</div>' : "")
-        + '</div>';
-    });
-    html += '</section>';
   });
+  html += '</section>';
 
-  if(query && !pool.some(matVisible)) html += '<div class="empty">No materials match &ldquo;' + esc(query) + '&rdquo;.</div>';
   document.getElementById("wrap").innerHTML = html;
-  document.getElementById("jump").innerHTML = jump;
+  document.getElementById("jump").innerHTML = "";
 }
 
-function storeListText(sk){
-  var lines = MATS.filter(function(m){
-    return storeOf(m) === sk && !state.mats[m.id] && (!cartOnly || state.cart[m.id]);
-  }).map(function(m){
-    return qtyOf(m) + "x  " + m.name
-      + (m.caution ? "\n     " + m.caution : "");
-  });
+function cartText(){
+  var lines = MATS.filter(function(m){ return state.cart[m.id] && !state.mats[m.id]; })
+    .map(function(m){ return qtyOf(m) + "x  " + m.name + (m.caution ? "\n     " + m.caution : ""); });
   return JOB.short + ", " + JOB.cityLine + " - Turn " + JOB.turn + "\n"
-    + STORES[sk][0] + " run (" + lines.length + (lines.length === 1 ? " item):" : " items):") + "\n" + lines.join("\n");
+    + "Shopping list (" + lines.length + (lines.length === 1 ? " item):" : " items):") + "\n" + lines.join("\n");
 }
 
-/* the cart strip pinned under the header — always shows where the buying stands */
 function renderCartBar(){
   var el = document.getElementById("cartbar");
+  var ico = '<span class="cb-ico" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M2 3h2.2l1.9 9.2a1.4 1.4 0 0 0 1.4 1.1h7.1a1.4 1.4 0 0 0 1.4-1.1L17.5 6H5"/><circle cx="8" cy="17" r="1.1"/><circle cx="15" cy="17" r="1.1"/></svg></span>';
   var inCart = MATS.filter(function(m){ return state.cart[m.id]; });
-  /* all three carts, always — an empty one still has to be visible so you
-     know it exists and can see things land in it as you work down the list */
-  var chips = STORE_ORDER.map(function(sk){
-    var n = inCart.filter(function(m){ return storeOf(m) === sk; }).length;
-    var got = inCart.filter(function(m){ return storeOf(m) === sk && state.mats[m.id]; }).length;
-    var cls = !n ? " cb-zero" : (got === n ? " cb-got" : "");
-    return '<button class="cb-chip' + cls + '" data-cb="' + sk + '">'
-      + '<b>' + esc(STORES[sk][3]) + '</b> ' + (n - got)
-      + (got ? '<span class="cb-sub">' + got + ' got</span>' : "") + '</button>';
-  }).join("");
-  el.className = "cartbar" + (inCart.length ? "" : " is-empty");
-  el.innerHTML = '<span class="cb-ico" aria-hidden="true">'
-    + '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'
-    + '<path d="M2 3h2.2l1.9 9.2a1.4 1.4 0 0 0 1.4 1.1h7.1a1.4 1.4 0 0 0 1.4-1.1L17.5 6H5"/>'
-    + '<circle cx="8" cy="17" r="1.1"/><circle cx="15" cy="17" r="1.1"/></svg></span>'
-    + chips
-    + (inCart.length ? "" : '<span class="cb-empty">add as you go</span>');
+  var left = inCart.filter(function(m){ return !state.mats[m.id]; }).length;
+  var got = inCart.length - left;
+  if(!inCart.length){
+    el.className = "cartbar is-empty";
+    el.innerHTML = ico + '<span class="cb-empty">Shopping list is empty &mdash; hit <b>Add</b> as you go</span>';
+    return;
+  }
+  el.className = "cartbar";
+  el.innerHTML = ico
+    + '<button class="cb-chip" data-cb="1"><b>' + left + '</b> to get</button>'
+    + (got ? '<span class="cb-got mono">' + got + ' in truck</span>' : '')
+    + '<span class="cb-open">See list &rarr;</span>';
 }
 
 function renderProgress(){
@@ -1995,22 +1963,17 @@ document.getElementById("wrap").addEventListener("click", function(e){
   if(re){ setDone(+re.closest(".task").dataset.id, false, render); return; }
   var ph = e.target.closest('[data-act="photo"]');
   if(ph){ openPhoto(+ph.closest(".task").dataset.id); return; }
-  var pk = e.target.closest('[data-act="pick"]');
-  if(pk){
-    var pid = pk.dataset.mid, psk = pk.dataset.sk;
-    if(state.cart[pid] && storeOf(MID[pid]) === psk){
-      delete state.cart[pid];            /* tapping the lit one takes it back out */
-    } else {
-      setStore(pid, psk);
-      state.cart[pid] = true;
-    }
-    save(); commitMat(pid); render();
+  var addb = e.target.closest('[data-act="add"]');
+  if(addb){
+    var aid = addb.dataset.mid;
+    state.cart[aid] = true;
+    save(); commitMat(aid); render();
     return;
   }
-  var up = e.target.closest('[data-act="unpick"]');
-  if(up){
-    delete state.cart[up.dataset.mid];
-    save(); commitMat(up.dataset.mid); render();
+  var rmb = e.target.closest('[data-act="remove"]');
+  if(rmb){
+    delete state.cart[rmb.dataset.mid];
+    save(); commitMat(rmb.dataset.mid); render();
     return;
   }
   var mt = e.target.closest('[data-act="mtick"]');
@@ -2039,56 +2002,34 @@ document.getElementById("wrap").addEventListener("click", function(e){
   }
   var qb = e.target.closest("[data-qty]");
   if(qb){
-    var mid = qb.dataset.qty;
-    setQty(mid, qtyOf(MATS.filter(function(x){ return x.id === mid; })[0]) + (+qb.dataset.d));
+    var qmid = qb.dataset.qty;
+    setQty(qmid, qtyOf(MATS.filter(function(x){ return x.id === qmid; })[0]) + (+qb.dataset.d));
     render();
-    var f = document.getElementById("q_" + mid); if(f) f.focus();
+    var f = document.getElementById("q_" + qmid); if(f) f.focus();
     return;
   }
   var qr = e.target.closest("[data-qrst]");
   if(qr){ delete state.qty[qr.dataset.qrst]; save(); commitMat(qr.dataset.qrst); render(); return; }
-  var sb = e.target.closest("[data-store]");
-  if(sb){
-    var smid = sb.dataset.store;
-    setStore(smid, sb.dataset.sk);
-    render();
-    var row = document.querySelector('.mat[data-mid="' + smid + '"]');
-    if(row){
-      var ry = row.getBoundingClientRect().top + window.scrollY - document.querySelector(".top").offsetHeight - 10;
-      window.scrollTo({top:ry});
-      row.animate([{boxShadow:"0 0 0 3px var(--done)"},{boxShadow:"0 0 0 0 transparent"}],{duration:1200});
-    }
-    return;
-  }
-  var sr = e.target.closest("[data-srst]");
-  if(sr){ delete state.store[sr.dataset.srst]; save(); commitMat(sr.dataset.srst); render(); return; }
-  var cp = e.target.closest("[data-copy]");
-  if(cp){
-    var sk = cp.dataset.copy;
+  if(e.target.closest("#copyList")){
+    var cb = e.target.closest("#copyList");
     if(navigator.clipboard){
-      navigator.clipboard.writeText(storeListText(sk)).then(function(){
-        cp.textContent = "Copied";
-        setTimeout(function(){ cp.textContent = "Copy this list"; }, 2000);
+      navigator.clipboard.writeText(cartText()).then(function(){
+        cb.textContent = "Copied";
+        setTimeout(function(){ cb.textContent = "Copy list"; }, 2000);
       });
     }
     return;
   }
-  var oa = e.target.closest("[data-openall]");
-  if(oa){
-    var sk2 = oa.dataset.openall;
-    var todo = MATS.filter(function(m){
-      return storeOf(m) === sk2 && !state.mats[m.id] && m.q && (!cartOnly || state.cart[m.id]);
-    });
+  if(e.target.closest("#openAll")){
+    var oa = e.target.closest("#openAll");
+    var todo = MATS.filter(function(m){ return state.cart[m.id] && !state.mats[m.id] && m.q; });
     todo.forEach(function(m, i){
-      setTimeout(function(){
-        window.open(STORES[sk2][2] + encodeURIComponent(m.q), "_blank", "noopener");
-      }, i * 260);
+      setTimeout(function(){ window.open(STORES.hd[2] + encodeURIComponent(m.q), "_blank", "noopener"); }, i * 260);
     });
     oa.textContent = "Opening " + todo.length + "…";
-    setTimeout(function(){ oa.textContent = "Open all " + todo.length + " searches"; }, todo.length * 260 + 1200);
+    setTimeout(function(){ oa.textContent = "Look up all on Home Depot"; }, todo.length * 260 + 1200);
     return;
-  }
-  if(e.target.closest("#clearMats")){
+  }  if(e.target.closest("#clearMats")){
     state.mats = {}; save(); MATS.forEach(function(m){ commitMat(m.id); }); render(); return;
   }
 });
@@ -2101,17 +2042,13 @@ document.getElementById("wrap").addEventListener("change", function(e){
 
 
 document.getElementById("cartbar").addEventListener("click", function(e){
-  var c = e.target.closest("[data-cb]"); if(!c) return;
-  var sk = c.dataset.cb;
+  if(!e.target.closest("[data-cb]")) return;
   cartOnly = true;
   try{ localStorage.setItem(KEY + ".co", "1"); }catch(e2){}
   setView("mat", true);
-  var sec = document.querySelector('.store[data-store="' + sk + '"]');
-  if(sec){
-    var y = sec.getBoundingClientRect().top + window.scrollY - document.querySelector(".top").offsetHeight - 10;
-    window.scrollTo({top:Math.max(0, y), behavior:"smooth"});
-  } else window.scrollTo({top:0});
+  window.scrollTo({top:0, behavior:"smooth"});
 });
+
 
 document.getElementById("jump").addEventListener("click", function(e){
   var b = e.target.closest("[data-jump]"); if(!b) return;
